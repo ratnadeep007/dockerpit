@@ -1,7 +1,6 @@
 <template>
-  <div class="home">
+  <div class="container">
     <v-container>
-      <p class="headline">Containers: </p>
       <div v-for="container in containers" :key="container.Id">
         <v-card id="cards" class="mt-2 elevation-3">
           <v-card-title primary-title>
@@ -13,31 +12,22 @@
           <v-card-text>
             <div><b>Image: </b>{{container.Image}}</div>
             <div><b>State: </b>{{container.State}}</div>
-            <div><b>Status: </b><span class="green--text">{{container.Status}} <i class="material-icons caption">fiber_manual_record</i></span></div>
+            <div v-if="container.State === 'running'"><b>Status: </b><span class="green--text">{{container.Status}} <i class="material-icons caption">fiber_manual_record</i></span></div>
+            <div v-if="container.State === 'exited'"><b>Status: </b><span class="red--text">{{container.Status}} <i class="material-icons caption">fiber_manual_record</i></span></div>
             <div><b>Network: </b>{{container.HostConfig.NetworkMode}}</div>
             <div><b>Command: </b>{{container.Command}}</div>
           </v-card-text>
           <v-divider></v-divider>
           <v-card-actions>
-            <v-hover><v-btn depressed @click="openDialog('stop', container.Id)" class="red--text" slot-scope="{ hover }" :class="`elevation-${hover ? 9 : 0}`"><i class="material-icons">stop</i>STOP</v-btn></v-hover>
-            <v-hover><v-btn depressed @click="openDialog('restart', container.Id)" class="blue--text" slot-scope="{ hover }" :class="`elevation-${hover ? 9 : 0}`"><i class="material-icons">loop</i>RESTART</v-btn></v-hover>
+            <v-hover v-if="container.State === 'running'"><v-btn depressed @click="openDialog('stop', container.Id)" class="red--text" slot-scope="{ hover }" :class="`elevation-${hover ? 9 : 0}`"><i class="material-icons">stop</i>STOP</v-btn></v-hover>
+            <v-hover v-if="container.State === 'running'"><v-btn depressed @click="openDialog('restart', container.Id)" class="blue--text" slot-scope="{ hover }" :class="`elevation-${hover ? 9 : 0}`"><i class="material-icons">loop</i>RESTART</v-btn></v-hover>
+            <v-hover v-if="container.State === 'exited'"><v-btn depressed @click="openDialog('start', container.Id)" class="green--text" slot-scope="{ hover }" :class="`elevation-${hover ? 9 : 0}`"><i class="material-icons">done</i>START</v-btn></v-hover>
+            <v-hover v-if="container.State === 'exited'"><v-btn depressed @click="openDialog('delete', container.Id)" class="red--text" slot-scope="{ hover }" :class="`elevation-${hover ? 9 : 0}`"><i class="material-icons">clear</i>DELETE</v-btn></v-hover>
+            <v-hover><v-btn depressed @click="detailContainer(container.Id)" class="blue--text" slot-scope="{ hover }" :class="`elevation-${hover ? 9 : 0}`"><i class="material-icons mr-1">list</i>DETAIL</v-btn></v-hover>
           </v-card-actions>
         </v-card>
       </div>
       <br/>
-      <p class="headline">Images: </p>
-      <div v-for="image in images" :key="image.Id">
-        <v-card class="mt-2 elevativon-3" id="cards">
-          <v-card-title primary-title>
-            <div>
-              <h3 class="headline mb-0">{{image.RepoTags[0]}}</h3>
-            </div>
-          </v-card-title>
-          <v-card-text>
-            <b>Size: </b> {{image.Size / (1024 * 1024) | roundValuee }}
-          </v-card-text>
-        </v-card>
-      </div>
       <v-dialog v-model="dialogOpened" max-width="30%">
         <v-card>
           <v-card-text class="headline">
@@ -59,9 +49,7 @@ import axios from 'axios'
 export default {
   data() {
     return {
-      dockers: {},
       containers: [],
-      images: [],
       dialogOpened: false,
       dialogText: '',
       selectedContainer: ''
@@ -69,7 +57,7 @@ export default {
   },
   created() {
     console.log('created')
-    this.getAll()
+    this.getContainers()
   },
   methods: {
     openDialog(action, id) {
@@ -84,19 +72,20 @@ export default {
           .then(res => {
             this.dialogOpened = !this.dialogOpened
             console.log(res.data)
-            this.getAll()
+            this.getContainers()
           })
           .catch(err => console.log(err))
     },
-    getAll() {
+    getContainers() {
       axios
-      .get('http://localhost:3000/home')
+      .get('http://localhost:3000/containers')
       .then(res => {
-        console.log(res.data)
-        this.containers = res.data.containers
-        this.images = res.data.images
-        this.dockers = res.data
+        console.log(res)
+        this.containers = res.data
       })
+    },
+    detailContainer(id) {
+      this.$router.push({name: 'container', params: { id }})
     }
   }
 }
