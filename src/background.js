@@ -57,6 +57,7 @@ routes.get('/container/:id', (req, res) => {
     })
   } else if (action === 'detail') {
     container.inspect().then(detail => {
+      console.log(detail)
       res.send(detail)
     })
   }

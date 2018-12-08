@@ -10,11 +10,11 @@
           <div><b>Arguments: </b>
             <span v-for="(arg, index) in containerDetail.Args" :key="index">{{arg}} </span>
           </div>
-          <div>
-            <b>Image:</b>
-            <div v-for="(image, index) in imageDetail.RepoTags" :key="index" class="ml-2">
-              {{index+1}}. {{image}}
-            </div>
+          <div v-if="imageDetail">
+          <b>Image:</b>
+          <div v-for="(image, index) in imageDetail.RepoTags" :key="index" class="ml-2">
+            {{index+1}}. {{image}}
+          </div>
           </div>
           <div v-if="containerDetail.State.Running">
             <div><b>Mac Address: </b> {{containerDetail.NetworkSettings.MacAddress}}</div>
@@ -69,19 +69,7 @@ export default {
   },
   created() {
     this.containerId = this.$route.params.id
-    axios
-      .get(`http://localhost:3000/container/${this.containerId}/?action=detail`)
-      .then(res => {
-        console.log(res.data)
-        this.containerDetail = res.data
-        this.containerPort = Object.keys(res.data.NetworkSettings.Ports)
-        this.containerPort.forEach(port => {
-          // this.mappedIPPorts.push(port.split('/')[0])
-          this.mappedIPPorts[port.split('/')[0]] = this.containerDetail.NetworkSettings.Ports[port]
-          this.imageId = this.containerDetail.Image
-          this.getImageDetail()
-        })
-      })
+    this.getContainerDetail()
   },
   methods: {
     getImageDetail() {
@@ -89,14 +77,38 @@ export default {
         .get(`http://localhost:3000/image/${this.imageId}/?action=detail`)
         .then(res => {
           this.imageDetail = res.data
-          console.log(this.imageDetail)
         })
+        .catch(err => console.log(err))
     },
     openDialog(action, id) {
       this.dialogText = action;
       this.dialogOpened = !this.dialogOpened
       this.selectedContainer = id
     },
+    containerAction() {
+      console.log(this.selectedContainer)
+      axios
+          .get(`http://localhost:3000/container/${this.selectedContainer}/?action=${this.dialogText}`)
+          .then(() => {
+            this.dialogOpened = !this.dialogOpened
+            this.getContainerDetail()
+          })
+          .catch(err => console.log(err))
+    },
+    getContainerDetail() {
+      axios
+      .get(`http://localhost:3000/container/${this.containerId}/?action=detail`)
+      .then(res => {
+        this.containerDetail = res.data
+        this.imageId = this.containerDetail.Image
+        this.getImageDetail()
+        this.containerPort = Object.keys(res.data.NetworkSettings.Ports)
+        this.containerPort.forEach(port => {
+          // this.mappedIPPorts.push(port.split('/')[0])
+          this.mappedIPPorts[port.split('/')[0]] = this.containerDetail.NetworkSettings.Ports[port]
+        })
+      })
+    }
   }
 }
 </script>
