@@ -1,29 +1,20 @@
-# dockerpit
+# Dockerpit
+Your control base for docker.
 
-## Project setup
-```
-npm install
-```
+## Notes:
+This app is still in prototype and can have some bugs.
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+## TODO
+~~1. Basic bootstrap of app~~
 
-### Compiles and minifies for production
-```
-npm run build
-```
+~~2. Container manupulation~~
 
-### Run your tests
-```
-npm run test
-```
+3. Image manipulation
+4. Dockerfile parsing
+5. More advance feature
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## Running the app
+Clone the repo then:
+> npm install
+>
+> npm run electron:server
