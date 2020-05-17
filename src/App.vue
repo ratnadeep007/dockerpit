@@ -36,7 +36,8 @@ export default {
       items: [
         { title: 'Home', icon: 'dashboard', router: '/' },
         { title: 'Containers', icon: 'dashboard', router: '/containers' },
-        { title: 'Images', icon: 'dashboard', router: '/images'}
+        { title: 'Images', icon: 'dashboard', router: '/images'},
+        { title: 'Settings', icon: 'dashboard', router: '/settings'}
       ],
       right: null
     }

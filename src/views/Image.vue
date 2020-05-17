@@ -59,6 +59,7 @@ export default {
   created() {
     console.log('created')
     this.getImages()
+    console.log(this.$store.state);
   },
   methods: {
     openDialog(action, id) {
@@ -82,7 +83,15 @@ export default {
       .get('http://localhost:3000/images')
       .then(res => {
         console.log(res)
-        this.images = res.data
+        if (this.$store.state.showK8sImages) {
+          this.images = res.data
+        } else {
+          console.log("true");
+          console.log(res.data[0].RepoTags[0]);
+          this.images = res.data.filter(image => !image.RepoTags[0].includes('k8s'))
+          this.images = this.images.filter(image => !image.RepoTags[0].includes('kube'))
+          this.images = this.images.filter(image => !image.RepoTags[0].includes('docker/desktop'))
+        }
       })
     },
     pullImage() {
