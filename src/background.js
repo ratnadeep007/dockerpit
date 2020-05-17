@@ -18,14 +18,12 @@ let win
 
 // Create server before creating browser window
 // Running containers and list of images
-routes.get('/home', (req, res, next) => {
-  docker.listContainers((err, containers) => {
-    docker.listImages((err, images) => {
-      res.json({
-        containers,
-        images
-      })
-    })
+routes.get('/home', async (req, res, next) => {
+  const containers = await docker.listContainers({ all: true });
+  const images = await docker.listImages();
+  res.json({
+    containers,
+    images
   })
 })
 
