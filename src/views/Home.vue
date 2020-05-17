@@ -1,54 +1,13 @@
 <template>
   <div class="home">
     <v-container>
-      <p class="headline">Containers: </p>
-      <div v-for="container in containers" :key="container.Id">
-        <v-card id="cards" class="mt-2 elevation-3">
-          <v-card-title primary-title>
-            <div>
-              <h3 class="headline mb-0">{{container.Names[0].split('/')[1]}}</h3>
-            </div>
-          </v-card-title>
-          <v-divider></v-divider>
-          <v-card-text>
-            <div><b>Image: </b>{{container.Image}}</div>
-            <div><b>State: </b>{{container.State}}</div>
-            <div><b>Status: </b><span class="green--text">{{container.Status}} <i class="material-icons caption">fiber_manual_record</i></span></div>
-            <div><b>Network: </b>{{container.HostConfig.NetworkMode}}</div>
-            <div><b>Command: </b>{{container.Command}}</div>
-          </v-card-text>
-          <v-divider></v-divider>
-          <v-card-actions>
-            <v-hover><v-btn depressed @click="openDialog('stop', container.Id)" class="red--text" slot-scope="{ hover }" :class="`elevation-${hover ? 9 : 0}`"><i class="material-icons">stop</i>STOP</v-btn></v-hover>
-            <v-hover><v-btn depressed @click="openDialog('restart', container.Id)" class="blue--text" slot-scope="{ hover }" :class="`elevation-${hover ? 9 : 0}`"><i class="material-icons">loop</i>RESTART</v-btn></v-hover>
-          </v-card-actions>
-        </v-card>
-      </div>
-      <br/>
-      <p class="headline">Images: </p>
-      <div v-for="image in images" :key="image.Id">
-        <v-card class="mt-2 elevativon-3" id="cards">
-          <v-card-title primary-title>
-            <div>
-              <h3 class="headline mb-0">{{image.RepoTags[0]}}</h3>
-            </div>
-          </v-card-title>
-          <v-card-text>
-            <b>Size: </b> {{image.Size / (1024 * 1024) | roundValuee }}
-          </v-card-text>
-        </v-card>
-      </div>
-      <v-dialog v-model="dialogOpened" max-width="30%">
-        <v-card>
-          <v-card-text class="headline">
-            Are you sure you want to {{dialogText}} the container?
-          </v-card-text>
-          <v-card-actions>
-            <v-btn @click="containerAction()" class="red--text">Yes</v-btn>
-            <v-btn @click="openDialog()" class="green--text">No</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+      <p class="headline">Dashboard</p>
+      <p class="title">Containers</p>
+      <p>Running: {{ containerRunningCount }}</p>
+      <p>Stopped: {{ containerStoppedCount }}</p>
+      <p>Total: {{ containersCount }}</p>
+      <p class="title">Images</p>
+      <p>Total: {{ imagesCount }}</p>
     </v-container>
   </div>
 </template>
@@ -64,7 +23,11 @@ export default {
       images: [],
       dialogOpened: false,
       dialogText: '',
-      selectedContainer: ''
+      selectedContainer: '',
+      containersCount: 0,
+      containerRunningCount: 0,
+      containerStoppedCount: 0,
+      imagesCount: 0,
     }
   },
   created() {
@@ -94,8 +57,29 @@ export default {
       .then(res => {
         console.log(res.data)
         this.containers = res.data.containers
-        this.images = res.data.images
         this.dockers = res.data
+        this.containersCount = res.data.containers.length
+        this.images = res.data.images
+        let tempImageCount =  0;
+        let tempImages = [];
+        let tempContainerRunning = [];
+        let tempContainerStopped = [];
+
+        tempContainerRunning = this.containers.filter(container => container['State'] == 'running')
+        tempContainerStopped = this.containers.filter(container => container['State'] != 'running')
+
+        console.log(tempContainerRunning)
+        this.containerStoppedCount = tempContainerStopped.length
+        this.containerRunningCount = tempContainerRunning.length
+
+        if (this.$store.state.showK8sImages) {
+          this.imagesCount = res.data.images.length
+        } else {
+          tempImages = this.images.filter(image => !image.RepoTags[0].includes('k8s'))
+          tempImages = tempImages.filter(image => !image.RepoTags[0].includes('kube'))
+          tempImages = tempImages.filter(image => !image.RepoTags[0].includes('docker/desktop'))
+          this.imagesCount = tempImages.length
+        }
       })
     }
   }

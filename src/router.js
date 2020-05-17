@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
 import SingleContainer  from './views/SingleContainer.vue'
+import Settings from './views/Settings.vue'
 
 Vue.use(Router)
 
@@ -32,6 +33,11 @@ export default new Router({
       path: '/container/:id',
       name: 'container',
       component: SingleContainer
+    },
+    {
+      path: '/settings',
+      name: 'container',
+      component: Settings
     }
   ]
 })
